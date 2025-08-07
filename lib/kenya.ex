@@ -37,6 +37,7 @@ defmodule Kenya do
   import Kenya.Utils, only: [normalize: 1]
 
   alias Kenya.{
+    Constituency,
     Loader,
     County
   }
@@ -61,8 +62,34 @@ defmodule Kenya do
       47
 
   """
-  @spec counties() :: list(County.t())
+  @spec counties() :: [County.t(), ...]
   def counties, do: @counties
+
+  @doc """
+  Returns all sub-counties.
+
+  ## Examples
+
+      iex> sub_counties = Kenya.sub_counties()
+      iex> is_list(sub_counties)
+      true
+
+  """
+  @spec sub_counties() :: [SubCounty.t(), ...]
+  def sub_counties, do: @sub_counties
+
+  @doc """
+  Returns all constituencies.
+
+  ## Examples
+
+      iex> constituencies = Kenya.constituencies()
+      iex> is_list(constituencies)
+      true
+
+  """
+  @spec constituencies() :: [Constituency.t(), ...]
+  def constituencies, do: @constituencies
 
 
   @doc """
