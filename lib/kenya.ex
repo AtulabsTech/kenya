@@ -39,7 +39,8 @@ defmodule Kenya do
   alias Kenya.{
     Constituency,
     Loader,
-    County
+    County,
+    SubCounty,
   }
 
   # Ensure :yamerl is running
@@ -90,6 +91,105 @@ defmodule Kenya do
   """
   @spec constituencies() :: [Constituency.t(), ...]
   def constituencies, do: @constituencies
+
+  @doc """
+  Returns all wards.
+
+  ## Examples
+
+      iex> wards = Kenya.wards()
+      iex> is_list(wards)
+      true
+
+  """
+  @spec wards() :: [Ward.t(), ...]
+  def wards, do: @wards
+
+  @doc """
+  Returns a county by its code.
+
+  ## Examples
+
+      iex> county = Kenya.county("047")
+      iex> county.name
+      "Nairobi"
+
+  """
+  @spec county(String.t()) :: County.t() | nil
+  def county(code) do
+    counties()
+    |> Enum.find(&(&1.code == code))
+  end
+
+  @doc """
+  Returns a sub-county by its code.
+  """
+  @spec sub_county(String.t()) :: SubCounty.t() | nil
+  def sub_county(code) do
+    sub_counties()
+    |> Enum.find(&(&1.code == code))
+  end
+
+  @doc """
+  Returns a constituency by its code.
+  """
+  @spec constituency(String.t()) :: Constituency.t() | nil
+  def constituency(code) do
+    constituencies()
+    |> Enum.find(&(&1.code == code))
+  end
+
+  @doc """
+  Returns a ward by its code.
+  """
+  @spec ward(String.t()) :: Ward.t() | nil
+  def ward(code) do
+    wards()
+    |> Enum.find(&(&1.code == code))
+  end
+
+  @doc """
+  Filters counties by a given attribute and value.
+
+  ## Examples
+
+      iex> counties = Kenya.filter_counties(:region, "Central")
+      iex> Enum.all?(counties, &(&1.region == "Central"))
+      true
+
+      iex> counties = Kenya.filter_counties(:name, "Nairobi")
+      iex> Enum.count(counties)
+      1
+
+  """
+  @spec filter_counties(attribute :: atom(), value :: any()) :: [County.t(), ...]
+  def filter_counties(attribute, value) do
+    filter_by(counties(), attribute, value)
+  end
+
+  @doc """
+  Filters sub-counties by a given attribute and value.
+  """
+  @spec filter_sub_counties(attribute :: atom(), value :: any()) :: [SubCounty.t(), ...]
+  def filter_sub_counties(attribute, value) do
+    filter_by(sub_counties(), attribute, value)
+  end
+
+  @doc """
+  Filters constituencies by a given attribute and value.
+  """
+  @spec filter_constituencies(attribute :: atom(), value :: any()) :: [Constituency.t(), ...]
+  def filter_constituencies(attribute, value) do
+    filter_by(constituencies(), attribute, value)
+  end
+
+  @doc """
+  Filters wards by a given attribute and value.
+  """
+  @spec filter_wards(attribute :: atom(), value :: any()) :: [Ward.t(), ...]
+  def filter_wards(attribute, value) do
+    filter_by(wards(), attribute, value)
+  end
 
 
   @doc """
