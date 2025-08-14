@@ -1,70 +1,107 @@
 defmodule Kenya do
   @moduledoc """
   Kenya is a comprehensive collection of all Kenyan administrative divisions
-  including counties, sub-counties, constituencies, wards, and cities/towns
-  with their relevant geographical and administrative information.
+  including counties, sub-counties, constituencies, and wards with their relevant geographical
+  and administrative information.
 
   This library provides easy access to:
 
-  - **Counties**: All 47 counties with capitals, areas, populations, and administrative details
-  - **Sub-Counties**: Administrative subdivisions within counties
-  - **Constituencies**: Electoral constituencies with MP information
-  - **Wards**: The smallest electoral units with MCA information
-  - **Cities**: Major urban centers with municipal information
+  - **Counties**: All 47 counties with their constituencies and wards
+  - **Sub-counties**: Sub-counties with their wards
+  - **Constituencies**: Electoral constituencies with their wards
+  - **Wards**: The smallest electoral units
+  - **Towns**: Urban areas and settlements within wards
+
+  All administrative divisions use proper Kenyan coding:
+  - County codes: "001" to "047"
+  - Constituency codes: "001" to "289"
+  - Ward codes: "0001" to "1450"
+  - Town codes: "T001" to "TXXX"
+
+  The complete hierarchy is: **Region → County → Constituency → Ward → Town**
 
   ## Examples
 
       # Get all counties
-      counties = Kenya.counties()
+      counties = Kenya.all_counties()
       Enum.count(counties)
       # 47
 
-      # Find a specific county
-      nairobi = Kenya.county("047")
-      # %Kenya.County{name: "Nairobi", capital: "Nairobi", ...}
+      # Find a specific county by code
+      mombasa = Kenya.get_county("001")
+      # %{county_code: "001", name: "Mombasa", constituency_codes: [...], ward_codes: [...]}
 
-      # Filter counties by region
-      central_counties = Kenya.filter_counties(:region, "Central")
+      # Find a specific county by name
+      mombasa = Kenya.get_county("Mombasa")
+      # %{county_code: "001", name: "Mombasa", constituency_codes: [...], ward_codes: [...]}
+
+      # Get county with full constituency and ward details
+      mombasa_detailed = Kenya.county_with_details("001", include_constituencies: true, include_wards: true)
 
       # Get constituencies in a county
-      nairobi_constituencies = Kenya.constituencies_in_county("047")
+      mombasa_constituencies = Kenya.constituencies_in_county("001")
 
       # Find wards in a constituency
-      wards = Kenya.wards_in_constituency("001")
+      changamwe_wards = Kenya.list_wards_in_constituency("001")
+
+      # Get towns in a ward
+      cbd_towns = Kenya.towns_in_ward("1366")
+
+      # Search by name
+      nairobi = Kenya.get_county("Nairobi")
+
+      # Get complete administrative hierarchy for a county
+      nairobi_hierarchy = Kenya.county_hierarchy("047")
+
+      # Hierarchical filtering for location selection
+      coast_counties = Kenya.all_counties_in_region("Coast")
+      mombasa_constituencies = Kenya.constituencies_in_county("001")
+      changamwe_wards = Kenya.list_wards_in_constituency("001")
+      port_towns = Kenya.towns_in_ward("0001")
 
   """
 
-  import Kenya.Utils, only: [normalize: 1]
+  alias Kenya.{County, Constituency, Ward, Town, SubCounty}
+  alias Kenya.Data
 
-  alias Kenya.{
-    Constituency,
-    Loader,
-    County,
-    SubCounty,
-  }
-
-  # Ensure :yamerl is running
-  Application.start(:yamerl)
-
-  # Load data at compile time
-  @counties Loader.load_counties()
-  @sub_counties Loader.load_sub_counties()
-  @constituencies Loader.load_constituencies()
-  @wards Loader.load_wards()
-  @cities Loader.load_cities()
+  # ===== COUNTIES =====
 
   @doc """
   Returns all counties.
 
   ## Examples
 
-      iex> counties = Kenya.counties()
-      iex> Enum.count(counties)
+      iex> counties = Kenya.all_counties()
+      iex> length(counties)
       47
 
   """
-  @spec counties() :: [County.t(), ...]
-  def counties, do: @counties
+  @spec all_counties() :: [County.t()]
+  def all_counties, do: Data.counties()
+
+  @doc """
+  Gets a county by code or integer ID.
+
+  ## Examples
+
+      iex> mombasa = Kenya.get_county("001")
+      iex> mombasa.name
+      "Mombasa"
+
+      iex> mombasa = Kenya.get_county(1)  # backwards compatibility
+      iex> mombasa.name
+      "Mombasa"
+
+  """
+  @spec get_county(String.t() | integer() | nil) :: County.t() | nil
+  def get_county(nil), do: nil
+  def get_county(""), do: nil
+  def get_county(code) when is_binary(code), do: Data.county(code)
+
+  def get_county(id) when is_integer(id) do
+    code = String.pad_leading(to_string(id), 3, "0")
+    Data.county(code)
+  end
 
   @doc """
   Returns all sub-counties.
