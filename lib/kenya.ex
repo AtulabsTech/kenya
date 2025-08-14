@@ -104,17 +104,75 @@ defmodule Kenya do
   end
 
   @doc """
-  Returns all sub-counties.
+  @doc """
+  Gets the first county matching the given criteria.
 
   ## Examples
 
-      iex> sub_counties = Kenya.sub_counties()
-      iex> is_list(sub_counties)
-      true
+      iex> county = Kenya.get_county_by(:name, "Mombasa")
+      iex> county.county_code
+      "001"
+
+      iex> county = Kenya.get_county_by(:county_code, "047")
+      iex> county.name
+      "Nairobi"
+
+      iex> Kenya.get_county_by(:nonexistent, "value")
+      nil
 
   """
-  @spec sub_counties() :: [SubCounty.t(), ...]
-  def sub_counties, do: @sub_counties
+  @spec get_county_by(atom(), any()) :: County.t() | nil
+  def get_county_by(field, value) do
+    all_counties() |> Enum.find(fn county -> Map.get(county, field) == value end)
+  end
+
+  @doc """
+  Filters counties by the given criteria.
+
+  ## Examples
+
+      iex> coast_counties = Kenya.filter_counties(:region, "Coast")
+      iex> length(coast_counties) == 6
+      true
+
+      iex> coast_counties = Kenya.filter_counties(Kenya.all_counties(), %{region: "Coast"})
+      iex> length(coast_counties)
+      6
+
+  """
+  @spec filter_counties(atom(), any()) :: [County.t()]
+  def filter_counties(field, value) when is_atom(field) do
+    all_counties() |> Enum.filter(fn county -> Map.get(county, field) == value end)
+  end
+
+  @spec filter_counties([County.t()], map()) :: [County.t()]
+  def filter_counties(counties, criteria) when is_list(counties) and is_map(criteria) do
+    Enum.filter(counties, fn county ->
+      Enum.all?(criteria, fn {key, value} ->
+        Map.get(county, key) == value
+      end)
+    end)
+  end
+
+  @doc """
+  Gets complete administrative hierarchy for a county.
+
+  Returns a county with nested constituencies, each containing their wards.
+
+  ## Examples
+
+      county = Kenya.county_hierarchy("001")
+      # %{
+      #   county_code: "001",
+      #   name: "Mombasa",
+      #   constituencies: [
+      #     %{constituency_code: "001", name: "Changamwe", wards: [...]},
+      #     ...
+      #   ]
+      # }
+
+  """
+  def county_hierarchy(code), do: Data.county_hierarchy(code)
 
   @doc """
   Returns all constituencies.

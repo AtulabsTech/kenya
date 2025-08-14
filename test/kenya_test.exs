@@ -77,5 +77,47 @@ defmodule KenyaTest do
       assert Kenya.get_county("") == nil
     end
   end
+
+  describe("get_county_by/2") do
+    test "returns a county by name" do
+      county = Kenya.get_county_by(:name, "Mombasa")
+      assert county.county_code == "001"
+    end
+
+    test "returns a county by code" do
+      county = Kenya.get_county_by(:county_code, "001")
+      assert county.name == "Mombasa"
+    end
+
+    test "returns nil for non-existent county" do
+      county = Kenya.get_county_by(:name, "NonExistent")
+      assert is_nil(county)
+    end
+  end
+  describe "flexible data loading" do
+    test "county_hierarchy/1 returns complete nested structure" do
+      hierarchy = Kenya.county_hierarchy("001")
+
+      assert hierarchy.name == "Mombasa"
+      assert is_list(hierarchy.constituencies)
+      assert length(hierarchy.constituencies) == 6
+
+      # Check that constituencies have their wards
+      constituency = List.first(hierarchy.constituencies)
+      assert %Kenya.Constituency{} = constituency
+      assert is_list(constituency.wards)
+      assert length(constituency.wards) > 0
+
+      # Check that wards are full structs
+      ward = List.first(constituency.wards)
+      assert %Kenya.Ward{} = ward
+    end
+  end
+  describe "Kenya main module filter functions" do
+    test "filter_counties/2 works correctly" do
+      counties = Kenya.filter_counties(Kenya.all_counties(), %{region: "Coast"})
+      assert length(counties) == 6
+      assert Enum.all?(counties, &(&1.region == "Coast"))
+    end
   end
 end
