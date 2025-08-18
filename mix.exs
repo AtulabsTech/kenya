@@ -20,13 +20,12 @@ defmodule Kenya.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :yamerl]
+      extra_applications: [:logger]
     ]
   end
 
   defp deps do
     [
-      {:yamerl, "~> 0.10"},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
@@ -50,7 +49,10 @@ defmodule Kenya.MixProject do
       description: description(),
       maintainers: ["AtulabsTech"],
       licenses: ["MIT"],
-      links: %{"GitHub" => @source_url},
+      links: %{
+        "GitHub" => @source_url,
+        "Changelog" => "#{@source_url}/blob/v#{@version}/CHANGELOG.md"
+      },
       files: ~w(lib priv mix.exs README* LICENSE* CHANGELOG*)
     ]
   end
