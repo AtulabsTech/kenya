@@ -1,28 +1,67 @@
 defmodule Kenya.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/AtulabsTech/kenya"
+  @version "0.1.0"
+
   def project do
     [
       app: :kenya,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      docs: docs(),
+      package: package(),
+      description: description(),
+      source_url: @source_url
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
+  end
+
+  defp docs do
+    [
+      extras: [
+        "LICENSE.md": [title: "License"],
+        "README.md": [title: "Overview"]
+      ],
+      main: "readme",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
+      formatters: ["html"]
+    ]
+  end
+
+  defp package do
+    [
+      description: description(),
+      maintainers: ["AtulabsTech"],
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => @source_url,
+        "Changelog" => "#{@source_url}/blob/v#{@version}/CHANGELOG.md"
+      },
+      files: ~w(lib priv mix.exs README* LICENSE* CHANGELOG*)
+    ]
+  end
+
+  defp description do
+    """
+    Kenya is a comprehensive collection of all Kenyan administrative divisions
+    including counties, sub-counties, constituencies, wards, and cities/towns
+    with their relevant geographical and administrative information.
+    """
   end
 end
